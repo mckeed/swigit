@@ -1,0 +1,11 @@
+#! /usr/bin/env ruby
+
+system "git fetch 2>>/dev/null &" if Time.now - File::Stat.new('.git/FETCH_HEAD').mtime < 60*5 rescue nil
+
+if ARGV.any?
+  ARGV.each {|a| `git add -A "#{a}"` }
+else
+  `git add -A`
+end
+
+exec 'git status'

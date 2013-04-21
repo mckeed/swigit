@@ -1,0 +1,13 @@
+#! /usr/bin/ruby
+
+system "git fetch 2>>/dev/null &" if Time.now - File::Stat.new('.git/FETCH_HEAD').mtime < 60*5 rescue nil
+n = ARGV[0] ? ARGV[0].to_i : 6
+n *= 6
+res = `git log | head -n #{n}`
+cols = `tput cols`.to_i
+messages = res.scan(/(?:    .*\n)+/).map {|s| s.gsub(/^    /, '').gsub("\n\nConflicts:", " =>").gsub(/\n\t?/, " ") }
+authors = res.scan(/Author: \w+/).map {|s| s.sub('Author: ', '') + ': ' }
+lines = messages.zip(authors).map {|m,a| (a+m)[0,cols] }
+lines.each do |line|
+  puts line
+end

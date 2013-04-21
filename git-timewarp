@@ -1,0 +1,28 @@
+#! /usr/bin/ruby
+
+require 'rubygems'
+require 'active_support/core_ext'
+
+if ARGV.blank?
+  raise "Usage: git timewarp 2 days ago"
+end
+
+begin
+  date = eval ARGV.join(' ')
+rescue SyntaxError
+  date = eval ARGV.join('.')
+end
+
+raise "#{date.inspect} is not a time" unless date.is_a? Time
+
+puts command = %(env GIT_AUTHOR_DATE="#{date.inspect}" GIT_COMMITTER_DATE="#{date.inspect}" git commit)
+
+print "Enter commit message (q to cancel): "
+commit_message = STDIN.gets.chomp
+
+if commit_message.length > 4
+  command += " -m \"#{commit_message}\""
+  exec command
+elsif commit_message.empty?
+  exec command
+end

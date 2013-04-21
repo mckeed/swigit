@@ -1,0 +1,20 @@
+# git list : a very compact log of recent commits
+#
+# for best results make a .mailmap file with shortened names for everyone that are all the same length
+#
+# example:
+#  git list
+#  git list 30
+#  git list somebranch
+#
+if [ "$1" -eq "$1" 2> /dev/null ]; then
+  N=$1
+  B=""
+elif [ $2 ]; then
+  N=$2
+  B=$1
+else
+  N='12'
+  B=$1
+fi
+git log -n $N $B --no-merges --pretty=format:"%h %Cblue %aN %Creset %s %d" | cat; echo

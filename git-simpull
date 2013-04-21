@@ -1,0 +1,53 @@
+#! /usr/bin/ruby
+
+stash = `git stash`.chomp
+if $?.exitstatus != 0
+  print stash
+  puts "There was an error stashing your local changes"
+  system 'git status'
+  exit 1
+end
+stashed = (stash != "No local changes to save")
+puts "Working tree stashed" if stashed
+
+puts "Pulling from remote..."
+
+pull = `git pull --rebase --log`
+
+if $?.exitstatus != 0  # rebase conflict => 1
+  puts pull
+  puts "Exit code: %d" % $?.exitstatus
+  puts "Remember to git stash apply after fixing rebase" if stashed
+  exit $?.exitstatus
+elsif pull[/Applying/]
+  puts "Rebasing commits:"
+  pull.scan(/Applying: (.*)/).each do |a|
+    puts "   " + a.join
+  end
+end
+
+if ARGV[0] == '-t'
+  cmd = ARGV[1..-1]
+  cmd = cmd.empty? ? 'rake -t' : cmd.join(' ').gsub(', ', ' 2>&1 && ') + ' 2>&1'
+  puts "Running `#{cmd}`"
+  result = `#{cmd}`
+  if $?.exitstatus == 0
+    puts "Tests passed"
+  else
+    puts result
+    puts "Remember to `git stash apply` after fixing tests" if stashed
+    exit $?.exitstatus
+  end
+end
+  
+
+if stashed
+  stash = `git stash pop`
+  if $?.exitstatus != 0
+    puts "Restoring working tree..."
+    print stash
+  else
+    puts "Restored working tree"
+    exec "git status"
+  end
+end

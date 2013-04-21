@@ -1,0 +1,9 @@
+#! /usr/bin/ruby
+
+if ARGV.any?
+  ARGV.each {|a| `git reset HEAD "#{a}" 2>>/dev/null` }
+else
+  `git reset HEAD . 2>>/dev/null`
+end
+
+exec 'git status'
