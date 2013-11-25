@@ -17,4 +17,4 @@ else
   N='12'
   B=$1
 fi
-git log -n $N $B --no-merges --pretty=format:"%h %Cblue %aN %Creset %s %d" | cat; echo
+git log -n $N $B --pretty=format:"%h %Cblue %aN %Creset %s %d" | cat; echo
