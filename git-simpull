@@ -1,4 +1,4 @@
-#! /usr/bin/ruby
+#! /usr/bin/env ruby
 
 stash = `git stash`.chomp
 if $?.exitstatus != 0
@@ -12,7 +12,7 @@ puts "Working tree stashed" if stashed
 
 puts "Pulling from remote..."
 
-pull = `git pull --rebase --log`
+pull = `git pull -X patience --rebase --log 2>&1`
 
 if $?.exitstatus != 0  # rebase conflict => 1
   puts pull
