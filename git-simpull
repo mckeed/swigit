@@ -26,6 +26,8 @@ elsif pull[/Applying/]
   end
 end
 
+system "git submodule --quiet update --init --recursive"
+
 if ARGV[0] == '-t'
   cmd = ARGV[1..-1]
   cmd = cmd.empty? ? 'rake -t' : cmd.join(' ').gsub(', ', ' 2>&1 && ') + ' 2>&1'
