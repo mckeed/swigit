@@ -19,11 +19,22 @@ if $?.exitstatus != 0  # rebase conflict => 1
   puts "Exit code: %d" % $?.exitstatus
   puts "Remember to git stash apply after fixing rebase" if stashed
   exit $?.exitstatus
-elsif pull[/Applying/]
-  puts "Rebasing commits:"
-  pull.scan(/Applying: (.*)/).each do |a|
-    puts "   " + a.join
-  end
+else
+  branch = `git rev-parse --abbrev-ref HEAD`.chomp
+  pull.gsub!(/([0-9a-f]{6,}\.\.[0-9a-f]{6,}) +#{branch} .+$/) { |m|
+    m + "\n" + `git --no-pager log -n40 #{$1} --pretty=format:"%Cblue %aN %Creset %s %d" --reverse`
+  }
+  # puts "New commits:"
+  # system 'git --no-pager log -n40 @{1}..HEAD --pretty=format:"%Cblue %aN %Creset %s %d" --reverse'
+
+  # if pull[/Committed:/]
+  #   puts "Rebasing commits:"
+  #   pull.scan(/Committed: (.*)/).each do |a|
+  #     puts "   " + a.join
+  #   end
+  # else
+    puts pull
+  # end
 end
 
 system "git submodule --quiet update --init --recursive"
