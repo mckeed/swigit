@@ -10,6 +10,10 @@ end
 stashed = (stash != "No local changes to save")
 puts "Working tree stashed" if stashed
 
+if ARGV[0] && `git branch --list ${ARGV[0]}`
+  system 'git checkout ARGV[0]'
+end
+
 puts "Pulling from remote..."
 
 pull = `git pull -X patience --rebase --log 2>&1`
@@ -21,7 +25,7 @@ if $?.exitstatus != 0  # rebase conflict => 1
   exit $?.exitstatus
 else
   branch = `git rev-parse --abbrev-ref HEAD`.chomp
-  pull.gsub!(/([0-9a-f]{6,}\.\.[0-9a-f]{6,}) +#{branch} .+$/) { |m|
+  pull.sub!(/([0-9a-f]{6,}\.\.[0-9a-f]{6,}) +#{branch} .+$/) { |m|
     m + "\n" + `git --no-pager log -n40 #{$1} --pretty=format:"%Cblue %aN %Creset %s %d" --reverse`
   }
   # puts "New commits:"

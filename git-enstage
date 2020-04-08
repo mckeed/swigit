@@ -3,7 +3,7 @@
 system "git fetch 2>>/dev/null &" if Time.now - File::Stat.new('.git/FETCH_HEAD').mtime < 60*5 rescue nil
 
 if ARGV.any?
-  ARGV.each {|a| `git add -A "#{a}"` }
+  ARGV.each {|a| `git add "#{a}"` }
 else
   `git add -A :/`
 end
