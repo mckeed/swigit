@@ -1,7 +1,9 @@
-#! /usr/bin/env ruby
+#! /usr/bin/env RBENV_VERSION=2.7.8 ruby
 
 require 'rubygems'
+require 'active_support'
 require 'active_support/core_ext'
+require 'readline'
 
 if ARGV.blank?
   raise "Usage: git timewarp 2 days ago"
@@ -17,8 +19,7 @@ raise "#{date.inspect} is not a time" unless date.is_a? Time
 
 puts command = %(env GIT_AUTHOR_DATE="#{date.inspect}" GIT_COMMITTER_DATE="#{date.inspect}" git commit)
 
-print "Enter commit message (q to cancel): "
-commit_message = STDIN.gets.chomp
+commit_message = Readline.readline("Enter commit message (q to cancel): ", true)
 
 if commit_message.length > 4
   command += " -m \"#{commit_message}\""
