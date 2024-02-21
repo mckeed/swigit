@@ -1,11 +1,12 @@
 # git list : a very compact log of recent commits
 #
-# for best results make a .mailmap file with shortened names for everyone that are all the same length
+# for best results make a .mailmap file with shortened names for everyone
 #
 # example:
 #  git list
 #  git list 30
 #  git list somebranch
+#  git list somebranch 5
 #
 if [ "$1" -eq "$1" 2> /dev/null ]; then
   N=$1
@@ -15,6 +16,8 @@ elif [ $2 ]; then
   B=$1
 else
   N='12'
+  MIN=$(($(git log --oneline develop..${B:-@} | wc -l) + 1))
+  N=$(( $N < $MIN ? $MIN > 30 ? 12 : $MIN : $N ))
   B=$1
 fi
-git log -n $N $B --pretty=format:"%h %Cblue %aN %Creset %s %d" | cat; echo
+git log -n $N $B --first-parent --pretty="%h %C(blue)%<(7)%aN%Creset %s %C(green)#&%p %C(cyan)%d%Creset" --decorate-refs-exclude='refs/remotes/*/HEAD' --color=always | sed 's/#&[^ ]* *//'
