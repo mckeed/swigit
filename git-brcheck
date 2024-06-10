@@ -1,0 +1,37 @@
+#! /usr/bin/env zsh
+
+if [[ $1 == '-q' ]]
+then
+  BRANCH=$2
+  QUIET=1
+else
+  BRANCH=$1
+  QUIET=0
+fi
+
+if [[ -z $BRANCH ]] || ! git describe $BRANCH >> /dev/null
+then
+  (( $QUIET == 0 )) && echo 'usage: git brcheck <branchname>'
+  exit 1
+fi
+
+FOUND=false
+MSGS=$(git log ..$BRANCH --pretty="%s")
+for MSG in ${(f)MSGS}
+do
+  if [[ -z $(git log --grep="${(q)MSG}") ]]
+  then
+    echo "Did not find commit \"$MSG\""
+    FOUND=true
+  fi
+done
+
+if $FOUND
+then
+  echo
+  git list ..$BRANCH
+  exit 2
+elif (( $QUIET == 0 ))
+then
+  echo "All commits from $BRANCH found in history."
+fi
