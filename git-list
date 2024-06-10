@@ -16,8 +16,9 @@ elif [ $2 ]; then
   B=$1
 else
   N='12'
-  MIN=$(($(git log --oneline develop..${B:-@} | wc -l) + 1))
+  # Show at least all the divergent commits (if fewer than 30)
+  MIN=$(($(git log --oneline origin..${B:-@} | wc -l) + 1))
   N=$(( $N < $MIN ? $MIN > 30 ? 12 : $MIN : $N ))
   B=$1
 fi
-git log -n $N $B --first-parent --pretty="%h %C(blue)%<(7)%aN%Creset %s %C(green)#&%p %C(cyan)%d%Creset" --decorate-refs-exclude='refs/remotes/*/HEAD' --color=always | sed 's/#&[^ ]* *//'
+git log -n $N $B --pretty="%h %C(blue)%<(7)%aN%Creset %s %C(green)#&%p %C(cyan)%d%Creset" --decorate-refs-exclude='refs/remotes/*/HEAD' --color=always | sed 's/#&[^ ]* *//'
