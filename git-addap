@@ -25,7 +25,7 @@ elsif untracked.any?
   system "git add -N #{untracked.join(' ')}"
 end
 
-system 'git add -p'
+system "git add -p #{ARGV.join(' ')}"
 
 if untracked
   status = `git status --porcelain #{file_args.join(' ')}`
