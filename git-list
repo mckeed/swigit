@@ -2,23 +2,32 @@
 #
 # for best results make a .mailmap file with shortened names for everyone
 #
-# example:
+# examples:
 #  git list
 #  git list 30
 #  git list somebranch
 #  git list somebranch 5
+#  git list 30 develop..somebranch
 #
 if [ "$1" -eq "$1" 2> /dev/null ]; then
   N=$1
-  B=""
-elif [ $2 ]; then
+  B="${@:2}"
+elif [ "$2" -eq "$2" 2> /dev/null ]; then
   N=$2
   B=$1
 else
   N='12'
-  # Show at least all the divergent commits (if fewer than 30)
-  MIN=$(($(git log --oneline origin..${B:-@} | wc -l) + 1))
-  N=$(( $N < $MIN ? $MIN > 30 ? 12 : $MIN : $N ))
-  B=$1
+  B="$@"
+  if git describe $B > /dev/null 2>&1; then
+    # Show at least all the divergent commits (if fewer than 30)
+    MIN=$(($(git log --oneline origin..${B:-@} | wc -l) + 1)) # note: origin refers to origin's HEAD, not current branch's upstream
+    N=$(( $N < $MIN ? $MIN > 30 ? 30 : $MIN : $N ))
+  fi
 fi
-git log -n $N $B --pretty="%h %C(blue)%<(7)%aN%Creset %s %C(green)#&%p %C(cyan)%d%Creset" --decorate-refs-exclude='refs/remotes/*/HEAD' --color=always | sed 's/#&[^ ]* *//'
+if [[ $FIRST_PARENT == true ]]; then # used by git-line
+  git log -n $N --pretty="%h %C(blue)%<(7)%aN%Creset %s %C(green)#&%p %C(cyan)%d%Creset" --decorate-refs-exclude='refs/remotes/*/HEAD' --color=always --first-parent $B \
+    | sed 's/#&[^ ]* *//' # works with the format string to delete the first parent hash
+else
+  git log -n $N --pretty="%h %C(blue)%<(7)%aN%Creset %s %C(green)#&%p#& %C(cyan)%d%Creset" --decorate-refs-exclude='refs/remotes/*/HEAD' --color=always $B \
+    | sed 's/#&[^ ]*#&//' | sed 's/#&//g' # works with the format string to delete the parent hash if there's only one parent
+fi

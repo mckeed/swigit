@@ -1,0 +1,3 @@
+# Like git list but uses --first-parent to exclude commits that were merged in to the current branch
+
+FIRST_PARENT=true git list "$@"
