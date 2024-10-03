@@ -6,7 +6,7 @@ MAX_UNTRACKED = 8
 
 file_args = ARGV.reject { |arg| arg.start_with?('-') }
 
-status_lines = `git status --porcelain #{file_args.join(' ')}`.lines(chomp: true)
+status_lines = `git status -u --porcelain #{file_args.join(' ')}`.lines(chomp: true)
 untracked = status_lines.filter_map do |line|
   next unless line.start_with? '??'
 
@@ -25,10 +25,14 @@ elsif untracked.any?
   system "git add -N #{untracked.join(' ')}"
 end
 
-system "git add -p #{ARGV.join(' ')}"
+begin
+  system "git add -p #{ARGV.join(' ')}"
+rescue Interrupt => e
+  puts "\n"
+end
 
 if untracked
-  status = `git status --porcelain #{file_args.join(' ')}`
+  status = `git status -u --porcelain #{file_args.join(' ')}`
   status.each_line(chomp: true) do |line|
     if line.start_with?(' A ') && untracked.include?(path = line[3..])
       system "git restore --staged #{path}"
